@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>MatriXSS</title>
+    <link rel="stylesheet" type="text/css" href="./style/results-view.css">
+  </head>
+  <body>
+    <h1>Scan results</h1>
+    <div class="container">
+      <div id="results-container">
+        <p style="color: white;">Click on any row to display its page.</p>
+        <table id="results-table">
+          <tr>
+            <th>url</th>
+            <th>element query selector</th>
+            <th>page name</th>
+          </tr>
+        </table>
+      </div>
+      
+      <div class="page-view-container"></div>
+    </div>
+    {{custom_element}}
+  </body>
+</html>
