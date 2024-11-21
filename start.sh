@@ -1,2 +1,2 @@
 . ./.venv/bin/activate
-flask --app main run
+python3 ./main.py

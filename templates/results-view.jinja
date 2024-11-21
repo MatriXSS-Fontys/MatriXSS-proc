@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>MatriXSS</title>
-    <link rel="stylesheet" type="text/css" href="./style/results-view.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/results-view.css') }}">
   </head>
   <body>
     <h1>Scan results</h1>
@@ -15,11 +15,17 @@
             <th>element query selector</th>
             <th>page name</th>
           </tr>
+          {% for item in found_vulns %}
+          <tr>
+            <td>{{item.url}}</td>
+            <td>{{item.element_selector}}</td>
+            <td>{{item.page_name}}</td>
+          </tr>
+          {% endfor %}
         </table>
       </div>
       
       <div class="page-view-container"></div>
     </div>
-    {{custom_element}}
   </body>
 </html>
