@@ -11,8 +11,14 @@ app = Flask(__name__)
 import os
 print(os.path.abspath('static/exploit.js'))
 @app.route("/")
-def hello_world():  
-    return send_from_directory('exploit', 'exploit.js')
+def returnExploit():
+    # Log the full path for debugging
+    file_path = os.path.abspath("templates/exploit/exploit.js")
+    print(f"Looking for file at: {file_path}")
+    if not os.path.exists(file_path):
+        print("File does not exist!")
+        return "File not found", 404
+    return send_from_directory("templates/exploit", "exploit.js")
 
 @app.route("/dashboard")
 def dashboard():
