@@ -1,6 +1,6 @@
 import requests
 import os
-from flask import Flask, render_template, send_from_directory, request
+from flask import Flask, render_template, send_from_directory, request, render_template_string
 from models.vulnerability import Vulnerability
 from payload import payloads
 
@@ -24,22 +24,35 @@ def returnExploit():
     return send_from_directory("templates/exploit", "exploit.js")
 
 @app.route("/dashboard")
-def dashboard():
-    return render_template('dashboard-view.html')
 
+
+
+
+def dashboard():
+    content = render_template('dashboard-view.html')
+    # Render the dashboard page with the header
+    with open('templates/header.html', 'r') as file:
+        header = file.read()
+    return render_template_string(header + content)
 # Functions for XSS payloads
 
 
 # Define the route for the payloads page
 @app.route('/payloads')
 def index():
-    
-    return render_template('payloads-view.jinja', payloads=payloads)
+    content = render_template('payloads-view.jinja', payloads=payloads)
+    with open('templates/header.html', 'r') as file:
+        header = file.read()
+    return render_template_string(header + content)
 
 @app.route("/results")
 def found_vulns_page():
     found_vulns = [Vulnerability('https://example.com', '#username', '/')]
-    return render_template('results-view.jinja', found_vulns=found_vulns)
+    content = render_template('results-view.jinja', found_vulns=found_vulns)
+    with open('templates/header.html', 'r') as file:
+        header = file.read()
+    return render_template_string(header + content)
+    
 
 # Function to send a request and fetch page title (for scraping or other purposes)
 def send_request():
