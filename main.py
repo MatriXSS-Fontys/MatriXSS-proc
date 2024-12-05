@@ -3,22 +3,58 @@ import models.vulnerability
 from bs4 import BeautifulSoup
 from flask import Flask, render_template
 from jinja2 import Environment, FileSystemLoader
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, request, render_template_string
 from models.vulnerability import Vulnerability
 
 env = Environment(loader = FileSystemLoader('templates'))
 app = Flask(__name__)
 import os
 print(os.path.abspath('static/exploit.js'))
-@app.route("/")
-def returnExploit():
-    # Log the full path for debugging
-    file_path = os.path.abspath("templates/exploit/exploit.js")
-    print(f"Looking for file at: {file_path}")
+from flask import Flask, send_from_directory, request, session, redirect, url_for, abort
+import os
+
+app = Flask(__name__)
+app.secret_key = 'your_secret_key'  # Needed for session handling
+
+# Default to 'exploit.js' for all users until changed via admin
+@app.route("/", methods=["GET"])
+def serve_file():
+    # Get the currently selected file from the session (default is 'exploit.js')
+    current_file = session.get("current_file", "exploit.js")
+
+    # Define the path to the requested file
+    base_directory = os.path.abspath("templates/exploit") 
+    file_path = os.path.join(base_directory, current_file)
+    # Security: Prevent directory traversal
+    if not file_path.startswith(base_directory):
+        abort(403)  # Forbidden
+
+    # Check if the file exists
     if not os.path.exists(file_path):
-        print("File does not exist!")
         return "File not found", 404
-    return send_from_directory("templates/exploit", "exploit.js")
+
+    # Serve the selected file
+    return send_from_directory(base_directory, current_file)
+
+@app.route("/SelectExploit", methods=["GET", "POST"])
+def admin_page():
+    base_directory = os.path.abspath("templates/exploit") 
+    # If the request method is POST, update the file to be served
+    if request.method == "POST":
+        # Get the new file from the form data
+        new_file = request.form.get("file")
+        if new_file:
+            # Update the session to store the current file
+            session["current_file"] = new_file
+            return redirect(url_for("admin_page"))
+
+    # List all files in the exploit folder
+    available_files = [f for f in os.listdir(base_directory) if os.path.isfile(os.path.join(base_directory, f))]
+
+    # Render the admin page with the list of available files
+    return render_template("SelectExploit.html", available_files=available_files, current_file=session.get("current_file", "exploit.js"))
+
+
 
 @app.route("/dashboard")
 def dashboard():
@@ -29,7 +65,9 @@ def found_vulns_page():
     found_vulns = [Vulnerability('https://example.com', '#username', '/')]
     return render_template('results-view.jinja', found_vulns=found_vulns)
 
-
+@app.route("/exploitselect")
+def select_exploit_page():
+    return render_template("exploitSelect.html")
 
 def send_request():
     r = requests.get("https://example.com/")
