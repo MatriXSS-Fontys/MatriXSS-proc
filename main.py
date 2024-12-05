@@ -3,15 +3,16 @@ import models.vulnerability
 from bs4 import BeautifulSoup
 from flask import Flask, render_template
 from jinja2 import Environment, FileSystemLoader
-
+from flask import Flask, send_from_directory
 from models.vulnerability import Vulnerability
 
 env = Environment(loader = FileSystemLoader('templates'))
 app = Flask(__name__)
-
+import os
+print(os.path.abspath('static/exploit.js'))
 @app.route("/")
-def hello_world():
-    return render_template('home.jinja')
+def hello_world():  
+    return send_from_directory('exploit', 'exploit.js')
 
 @app.route("/dashboard")
 def dashboard():
