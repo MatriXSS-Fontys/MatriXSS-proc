@@ -1,7 +1,8 @@
 import requests
+import logging
 import models.vulnerability
 from bs4 import BeautifulSoup
-from flask import Flask, render_template
+from flask import Flask, render_template, request, jsonify
 from jinja2 import Environment, FileSystemLoader
 from flask import Flask, send_from_directory, request, render_template_string
 from models.vulnerability import Vulnerability
@@ -15,6 +16,7 @@ import os
 
 app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Needed for session handling
+logging.basicConfig(level=logging.INFO)
 
 # Default to 'exploit.js' for all users until changed via admin
 @app.route("/", methods=["GET"])
@@ -78,6 +80,23 @@ def send_request():
 
     print("page title: " + title.text)
 
+@app.route('/callback', methods=['POST'])
+def handle_callback():
+    data = request.get_json()
+    if data is None:
+        return jsonify({'error': 'Invalid JSON'}), 400
+
+    app.logger.info(f"Received callback: {data}")
+
+    event = data.get('event')
+    location = data.get('location')
+    timestamp = data.get('timestamp')
+
+    print(f"Event: {event}")
+    print(f"Location: {location}")
+    print(f"Timestamp: {timestamp}")
+
+    return jsonify({'status': 'Callback received'}), 200
 
 if __name__ == '__main__':
     app.run(debug=True)
