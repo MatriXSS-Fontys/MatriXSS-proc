@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XSSHunter Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+<header>
+    <h1>XSSHunter Dashboard</h1>
+    <nav>
+        <button onclick="showSection('dashboard')">Dashboard</button>
+        <button onclick="showSection('createPayload')">Create Payload</button>
+        <button onclick="showSection('logs')">Trigger Logs</button>
+        <button onclick="showSection('settings')">Settings</button>
+    </nav>
+</header>
+<main>
+    <section id="dashboard" class="view-section">
+        <h2>Dashboard Overview</h2>
+        <div id="payloadList"></div>
+    </section>
+
+    <section id="createPayload" class="view-section" style="display: none;">
+        <h2>Create Payload</h2>
+        <form id="payloadForm" onsubmit="createPayload(event)">
+            <label for="payloadName">Payload Name:</label>
+            <input type="text" id="payloadName" required>
+            <button type="submit">Generate Payload</button>
+        </form>
+    </section>
+
+    <section id="logs" class="view-section" style="display: none;">
+        <h2>Triggered Payloads</h2>
+        <div id="logList"></div>
+    </section>
+
+    <section id="settings" class="view-section" style="display: none;">
+        <h2>Settings</h2>
+    </section>
+</main>
+</body>
+</html>
