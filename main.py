@@ -22,10 +22,9 @@ def found_vulns_page():
     found_vulns = [Vulnerability('https://example.com', '#username', '/')]
     return render_template('results-view.jinja', found_vulns=found_vulns)
 
-@app.route("/capture-data", methods=['POST'])
-def capture_data():
+@app.route("/handle-vuln-data", methods=['POST'])
+def handle_vuln_data():
     data = request.get_json()
-
     if not data:
         return jsonify({"error": "No JSON data received"}), 400
 
@@ -36,19 +35,20 @@ def capture_data():
     if not all([url, element_selector, page_name]):
         return jsonify({"error": "Missing required fields"}), 400
 
-    print(f"Received data: URL={url}, Selector={element_selector}, Page Name={page_name}")
+    # Get the HTML contents from the vulnerable page for displaying in frontend
+    vulnerability = Vulnerability(url, element_selector, page_name)
+    vuln_page_contents = get_page_content(url)
 
-    return jsonify({"message": "Data received successfully", "received": data}), 200
+    # TODO: make screenshot of page content in 'vuln_page_contents' and render in frontend
+    # should this be done in JavaScript???
+
+    return jsonify(vulnerability), 200
 
 
-def send_request():
-    r = requests.get("https://example.com/")
+def get_page_content(url):
+    r = requests.get(url)
     content = r.text
-
-    soup = BeautifulSoup(content, 'html.parser')
-    title = soup.title
-
-    print("page title: " + title.text)
+    return BeautifulSoup(content, 'html.parser')
 
 
 if __name__ == '__main__':
