@@ -35,7 +35,7 @@
         </table>
       </div>
 
-        <div class="page-view-container">hi</div>
+        <div id="page-view-container"></div>
     </div>
   </main>
 
@@ -54,7 +54,8 @@
         })
           .then(response => response.json())
           .then(data => {
-            console.log('Success:', data);
+            // TODO: use iframe or html2canvas. this doesn't display right.
+            document.getElementById('page-view-container').innerHTML = data.page_content;
           })
           .catch((error) => {
             console.error('Error:', error);

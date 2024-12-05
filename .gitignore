@@ -1,0 +1,6 @@
+venv/
+venv1/
+__pycache__/main.cpython-312.pyc
+models/__pycache__/vulnerability.cpython-312.pyc
+.idea/
+.vscode/

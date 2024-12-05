@@ -20,10 +20,16 @@ def dashboard():
 @app.route("/results")
 def found_vulns_page():
     found_vulns = [Vulnerability('https://example.com', '#username', '/')]
-    return render_template('results-view.jinja', found_vulns=found_vulns)
+    return render_template('results-view.html', found_vulns=found_vulns)
 
 @app.route("/handle-vuln-data", methods=['POST'])
 def handle_vuln_data():
+    """
+    Gets the vulnerable page HTML by using `requests`. This is used to be able to display a preview of the vulnerable website.
+    This function might later on be (partially) replaced by html2canvas.js.
+    :return:
+    A string with the HTML contents of the vulnerable page that was requested.
+    """
     data = request.get_json()
     if not data:
         return jsonify({"error": "No JSON data received"}), 400
@@ -42,13 +48,12 @@ def handle_vuln_data():
     # TODO: make screenshot of page content in 'vuln_page_contents' and render in frontend
     # should this be done in JavaScript???
 
-    return jsonify(vulnerability), 200
+    return jsonify({"page_content": vuln_page_contents}), 200
 
 
 def get_page_content(url):
     r = requests.get(url)
-    content = r.text
-    return BeautifulSoup(content, 'html.parser')
+    return r.text
 
 
 if __name__ == '__main__':
