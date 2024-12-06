@@ -77,10 +77,6 @@ def admin_page():
     return render_template("SelectExploit.html", available_files=available_files, current_file=session.get("current_file", "exploit.js"))
 
 @app.route("/dashboard")
-
-
-
-
 def dashboard():
     content = render_template('dashboard-view.html')
     # Render the dashboard page with the header
