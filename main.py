@@ -86,18 +86,11 @@ def dashboard():
     
 @app.route('/payloads')
 def index():
-    content = render_template('payloads-view.jinja', payloads=payloads)
+    content = render_template('payloads-view.jinja', payloads=payloads) # TODO: Where are these even supposed to come from???
     with open('templates/header.html', 'r') as file:
         header = file.read()
     return render_template_string(header + content)
 
-# @app.route("/results")
-# def found_vulns_page():
-#     found_vulns = [
-#         Vulnerability('https://example.com', '#example', '/example'),
-#         Vulnerability('https://github.com', '#example', '/example'),
-#     ]
-#     return render_template('results-view.html', found_vulns=found_vulns)
     
 @app.route("/results")
 def found_vulns_page():
@@ -105,7 +98,7 @@ def found_vulns_page():
         Vulnerability('https://example.com', '#example', '/example'),
         Vulnerability('https://github.com', '#example', '/example'),
     ]
-    content = render_template('results-view.jinja', found_vulns=found_vulns)
+    content = render_template('results-view.html', found_vulns=found_vulns)
     with open('templates/header.html', 'r') as file:
         header = file.read()
     return render_template_string(header + content)
