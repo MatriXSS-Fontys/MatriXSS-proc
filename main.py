@@ -1,20 +1,15 @@
 import requests
 import logging
-import models.vulnerability
+import os
 from bs4 import BeautifulSoup
-from flask import Flask, render_template, request, jsonify
 from jinja2 import Environment, FileSystemLoader
-from flask import Flask, send_from_directory, request, render_template_string
+from flask import Flask, send_from_directory, request, render_template_string, jsonify, render_template, session
 from models.vulnerability import Vulnerability
 
 env = Environment(loader = FileSystemLoader('templates'))
 app = Flask(__name__)
-import os
 print(os.path.abspath('static/exploit.js'))
-from flask import Flask, send_from_directory, request, session, redirect, url_for, abort
-import os
 
-app = Flask(__name__)
 app.secret_key = 'your_secret_key'  # Needed for session handling
 logging.basicConfig(level=logging.INFO)
 
