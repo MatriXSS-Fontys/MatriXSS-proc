@@ -64,21 +64,40 @@ def dashboard():
 
 @app.route("/results")
 def found_vulns_page():
-    found_vulns = [Vulnerability('https://example.com', '#username', '/')]
-    return render_template('results-view.jinja', found_vulns=found_vulns)
+    found_vulns = [
+        Vulnerability('https://example.com', '#example', '/example'),
+        Vulnerability('https://github.com', '#example', '/example'),
+    ]
+    return render_template('results-view.html', found_vulns=found_vulns)
+
+@app.route("/handle-vuln-data", methods=['POST'])
+def handle_vuln_data():
+    """
+    Gets the vulnerable page HTML by using `requests`. This is used to be able to display a preview of the vulnerable website.
+    This function might later on be (partially) replaced by html2canvas.js.
+    :return:
+    A string with the HTML contents of the vulnerable page that was requested.
+    """
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No JSON data received"}), 400
+    
+    url = data.get('url')
+    element_selector = data.get('element_selector')
+    page_name = data.get('page_name')
+    
+    if not all([url, element_selector, page_name]):
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    # Get the HTML contents from the vulnerable page for displaying in frontend
+    vulnerability = Vulnerability(url, element_selector, page_name)
+    vuln_page_contents = get_page_content(url)
+    
+    return jsonify({"page_content": vuln_page_contents}), 200
 
 @app.route("/exploitselect")
 def select_exploit_page():
     return render_template("exploitSelect.html")
-
-def send_request():
-    r = requests.get("https://example.com/")
-    content = r.text
-
-    soup = BeautifulSoup(content, 'html.parser')
-    title = soup.title
-
-    print("page title: " + title.text)
 
 @app.route('/callback', methods=['POST'])
 def handle_callback():
@@ -97,6 +116,11 @@ def handle_callback():
     print(f"Timestamp: {timestamp}")
 
     return jsonify({'status': 'Callback received'}), 200
+
+
+def get_page_content(url):
+    r = requests.get(url)
+    return r.text
 
 if __name__ == '__main__':
     app.run(debug=True)

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MatriXSS - Scan Results</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/results-view.css') }}">
+  <script src="{{ url_for('static', filename='js/html2canvas') }}" ></script>
+</head>
+<body>
+  <header>
+    <h1>MatriXSS Scan Results</h1>
+  </header>
+  <main>
+    <div class="container">
+      <div id="results-container">
+        <p class="info-text">Click on any row to display its page.</p>
+        <table id="results-table">
+          <thead>
+            <tr>
+              <th>URL</th>
+              <th>Element Selector</th>
+              <th>Page Name</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for item in found_vulns %}
+            <tr onclick="sendVulnToBackend('{{ item.url }}', '{{ item.element_selector }}', '{{ item.page_name }}')">
+              <td>{{ item.url }}</td>
+              <td>{{ item.element_selector }}</td>
+              <td>{{ item.page_name }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <iframe id="page-viewer"></iframe>
+    </div>
+  </main>
+
+<script>
+    function sendVulnToBackend(url, selector, pageName) {
+        fetch('/handle-vuln-data', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            url: url,
+            element_selector: selector,
+            page_name: pageName,
+          }),
+        })
+          .then(response => response.json())
+          .then(data => {
+            const pageView = document.getElementById('page-viewer');
+            pageView.srcdoc = data.page_content;
+          })
+          .catch((error) => {
+            console.error('Error:', error);
+          });
+        }
+</script>
+</body>
+</html>
