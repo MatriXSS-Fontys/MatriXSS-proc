@@ -19,7 +19,10 @@ def dashboard():
 
 @app.route("/results")
 def found_vulns_page():
-    found_vulns = [Vulnerability('https://example.com', '#username', '/')]
+    found_vulns = [
+        Vulnerability('https://example.com', '#example', '/example'),
+        Vulnerability('https://github.com', '#example', '/example'),
+    ]
     return render_template('results-view.html', found_vulns=found_vulns)
 
 @app.route("/handle-vuln-data", methods=['POST'])
@@ -33,21 +36,18 @@ def handle_vuln_data():
     data = request.get_json()
     if not data:
         return jsonify({"error": "No JSON data received"}), 400
-
+    
     url = data.get('url')
     element_selector = data.get('element_selector')
     page_name = data.get('page_name')
-
+    
     if not all([url, element_selector, page_name]):
         return jsonify({"error": "Missing required fields"}), 400
-
+    
     # Get the HTML contents from the vulnerable page for displaying in frontend
     vulnerability = Vulnerability(url, element_selector, page_name)
     vuln_page_contents = get_page_content(url)
-
-    # TODO: make screenshot of page content in 'vuln_page_contents' and render in frontend
-    # should this be done in JavaScript???
-
+    
     return jsonify({"page_content": vuln_page_contents}), 200
 
 
