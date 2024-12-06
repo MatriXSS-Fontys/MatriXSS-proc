@@ -38,6 +38,10 @@ def serve_file():
     # Serve the selected file
     return send_from_directory(base_directory, current_file)
 
+@app.route("/home", methods=["GET"])
+def home_page():
+    return render_template("home.jinja")
+
 @app.route("/SelectExploit", methods=["GET", "POST"])
 def admin_page():
     base_directory = os.path.abspath("templates/exploit") 
