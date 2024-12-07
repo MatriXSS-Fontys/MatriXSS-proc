@@ -1,10 +1,22 @@
+from flask import (
+    Flask,
+    send_from_directory,
+    request,
+    render_template_string,
+    jsonify,
+    render_template,
+    session,
+    abort,
+    redirect,
+    url_for
+)
 import requests
 import logging
 import os
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
-from flask import Flask, send_from_directory, request, render_template_string, jsonify, render_template, session
 from models.vulnerability import Vulnerability
+from payload import payloads
 
 env = Environment(loader = FileSystemLoader('templates'))
 app = Flask(__name__)
@@ -86,7 +98,7 @@ def dashboard():
     
 @app.route('/payloads')
 def index():
-    content = render_template('payloads-view.jinja', payloads=payloads) # TODO: Where are these even supposed to come from???
+    content = render_template('payloads-view.jinja', payloads=payloads)
     with open('templates/header.html', 'r') as file:
         header = file.read()
     return render_template_string(header + content)
