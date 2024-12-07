@@ -1,22 +1,50 @@
+from flask import (
+    Flask,
+    send_from_directory,
+    request,
+    render_template_string,
+    jsonify,
+    render_template,
+    session,
+    abort,
+    redirect,
+    url_for
+)
 import requests
 import logging
-import models.vulnerability
+import os
 from bs4 import BeautifulSoup
-from flask import Flask, render_template, request, jsonify
 from jinja2 import Environment, FileSystemLoader
-from flask import Flask, send_from_directory, request, render_template_string
 from models.vulnerability import Vulnerability
+from payload import payloads
 
 env = Environment(loader = FileSystemLoader('templates'))
 app = Flask(__name__)
-import os
-print(os.path.abspath('static/exploit.js'))
-from flask import Flask, send_from_directory, request, session, redirect, url_for, abort
-import os
 
-app = Flask(__name__)
+# Path to the exploit.js file for debugging purposes
+EXPLOIT_FILE_PATH = os.path.abspath("templates/exploit/exploit.js")
+
+print(os.path.abspath('static/exploit.js'))
+
 app.secret_key = 'your_secret_key'  # Needed for session handling
 logging.basicConfig(level=logging.INFO)
+
+
+@app.before_request
+def before_request():
+    # Store the current host in the context for use in templates
+    request.current_host = request.host_url
+
+# TODO: Which one to use on root? ("/") Commented is from 'payload-page' branch
+# @app.route("/")
+# def returnExploit():
+#     # Log the full path for debugging
+#     print(f"Looking for file at: {EXPLOIT_FILE_PATH}")
+#     if not os.path.exists(EXPLOIT_FILE_PATH):
+#         print("File does not exist!")
+#         return "File not found", 404
+#     return send_from_directory("templates/exploit", "exploit.js")
+
 
 # Default to 'exploit.js' for all users until changed via admin
 @app.route("/", methods=["GET"])
@@ -60,19 +88,32 @@ def admin_page():
     # Render the admin page with the list of available files
     return render_template("SelectExploit.html", available_files=available_files, current_file=session.get("current_file", "exploit.js"))
 
-
-
 @app.route("/dashboard")
 def dashboard():
-    return render_template('dashboard-view.html')
+    content = render_template('dashboard-view.html')
+    # Render the dashboard page with the header
+    with open('templates/header.html', 'r') as file:
+        header = file.read()
+    return render_template_string(header + content)
+    
+@app.route('/payloads')
+def index():
+    content = render_template('payloads-view.jinja', payloads=payloads)
+    with open('templates/header.html', 'r') as file:
+        header = file.read()
+    return render_template_string(header + content)
 
+    
 @app.route("/results")
 def found_vulns_page():
     found_vulns = [
         Vulnerability('https://example.com', '#example', '/example'),
         Vulnerability('https://github.com', '#example', '/example'),
     ]
-    return render_template('results-view.html', found_vulns=found_vulns)
+    content = render_template('results-view.html', found_vulns=found_vulns)
+    with open('templates/header.html', 'r') as file:
+        header = file.read()
+    return render_template_string(header + content)
 
 @app.route("/handle-vuln-data", methods=['POST'])
 def handle_vuln_data():
