@@ -23,6 +23,7 @@ app = Flask(__name__)
 
 # Path to the exploit.js file for debugging purposes
 EXPLOIT_FILE_PATH = os.path.abspath("templates/exploit/exploit.js")
+app.config['CURRENT_FILE'] = 'exploit.js'
 
 print(os.path.abspath('static/exploit.js'))
 
@@ -38,12 +39,13 @@ def before_request():
 # Default to 'exploit.js' for all users until changed via admin
 @app.route("/", methods=["GET"])
 def serve_file():
-    # Get the currently selected file from the session (default is 'exploit.js')
-    current_file = session.get("current_file", "exploit.js")
+    # Get the currently selected file from the global configuration
+    current_file = app.config['CURRENT_FILE']
 
     # Define the path to the requested file
     base_directory = os.path.abspath("templates/exploit") 
     file_path = os.path.join(base_directory, current_file)
+
     # Security: Prevent directory traversal
     if not file_path.startswith(base_directory):
         abort(403)  # Forbidden
@@ -55,26 +57,28 @@ def serve_file():
     # Serve the selected file
     return send_from_directory(base_directory, current_file)
 
+
 @app.route("/SelectExploit", methods=["GET", "POST"])
 def admin_page():
     base_directory = os.path.abspath("templates/exploit") 
-    # If the request method is POST, update the file to be served
+
     if request.method == "POST":
         # Get the new file from the form data
         new_file = request.form.get("file")
         if new_file:
-            # Update the session to store the current file
-            session["current_file"] = new_file
+            # Update the global configuration to store the current file
+            app.config['CURRENT_FILE'] = new_file
             return redirect(url_for("admin_page"))
 
     # List all files in the exploit folder
     available_files = [f for f in os.listdir(base_directory) if os.path.isfile(os.path.join(base_directory, f))]
 
     # Render the admin page with the list of available files
-    content = render_template("SelectExploit.html", available_files=available_files, current_file=session.get("current_file", "exploit.js"))
+    content = render_template("SelectExploit.html", available_files=available_files, current_file=app.config['CURRENT_FILE'])
     with open('templates/header.html', 'r') as file:
         header = file.read()
     return render_template_string(header + content)
+
 
 @app.route("/dashboard")
 def dashboard():
