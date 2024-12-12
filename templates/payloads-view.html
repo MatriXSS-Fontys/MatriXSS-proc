@@ -4,15 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>XSS Payloads</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
 
-        h1 {
-            color: #333;
-        }
+
+     
 
         .payload-container {
             margin-top: 20px;
@@ -34,7 +30,10 @@
             margin-bottom: 10px; /* Space between description and payload */
             color: #555;
         }
+        .code {
+            color: black;
 
+        }
         .payload pre {
             word-break: break-all;
             white-space: pre-wrap;
@@ -74,7 +73,7 @@
         <div class="payload-description">{{ payload['description'] }}</div>
 
         <!-- Display the payload code itself -->
-        <pre id="payload-{{ loop.index }}" style="user-select: all;">{{ payload['func']() | e }}</pre>
+        <pre class= "code" id="payload-{{ loop.index }}" style="user-select: all;">{{ payload['func']() | e }}</pre>
         <button id="copy-button-{{ loop.index }}" onclick="copyToClipboard('payload-{{ loop.index }}', this)">
             Copy
         </button>

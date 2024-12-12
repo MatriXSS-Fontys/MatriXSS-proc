@@ -55,10 +55,6 @@ def serve_file():
     # Serve the selected file
     return send_from_directory(base_directory, current_file)
 
-@app.route("/home", methods=["GET"])
-def home_page():
-    return render_template("home.jinja")
-
 @app.route("/SelectExploit", methods=["GET", "POST"])
 def admin_page():
     base_directory = os.path.abspath("templates/exploit") 
@@ -75,7 +71,10 @@ def admin_page():
     available_files = [f for f in os.listdir(base_directory) if os.path.isfile(os.path.join(base_directory, f))]
 
     # Render the admin page with the list of available files
-    return render_template("SelectExploit.html", available_files=available_files, current_file=session.get("current_file", "exploit.js"))
+    content = render_template("SelectExploit.html", available_files=available_files, current_file=session.get("current_file", "exploit.js"))
+    with open('templates/header.html', 'r') as file:
+        header = file.read()
+    return render_template_string(header + content)
 
 @app.route("/dashboard")
 def dashboard():
@@ -87,7 +86,7 @@ def dashboard():
     
 @app.route('/payloads')
 def index():
-    content = render_template('payloads-view.jinja', payloads=payloads)
+    content = render_template('payloads-view.html', payloads=payloads)
     with open('templates/header.html', 'r') as file:
         header = file.read()
     return render_template_string(header + content)
