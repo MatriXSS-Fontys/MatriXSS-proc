@@ -35,17 +35,6 @@ def before_request():
     # Store the current host in the context for use in templates
     request.current_host = request.host_url
 
-# TODO: Which one to use on root? ("/") Commented is from 'payload-page' branch
-# @app.route("/")
-# def returnExploit():
-#     # Log the full path for debugging
-#     print(f"Looking for file at: {EXPLOIT_FILE_PATH}")
-#     if not os.path.exists(EXPLOIT_FILE_PATH):
-#         print("File does not exist!")
-#         return "File not found", 404
-#     return send_from_directory("templates/exploit", "exploit.js")
-
-
 # Default to 'exploit.js' for all users until changed via admin
 @app.route("/", methods=["GET"])
 def serve_file():
