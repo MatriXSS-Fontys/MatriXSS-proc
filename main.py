@@ -75,7 +75,10 @@ def admin_page():
     available_files = [f for f in os.listdir(base_directory) if os.path.isfile(os.path.join(base_directory, f))]
 
     # Render the admin page with the list of available files
-    return render_template("SelectExploit.html", available_files=available_files, current_file=session.get("current_file", "exploit.js"))
+    content = render_template("SelectExploit.html", available_files=available_files, current_file=session.get("current_file", "exploit.js"))
+    with open('templates/header.html', 'r') as file:
+        header = file.read()
+    return render_template_string(header + content)
 
 @app.route("/dashboard")
 def dashboard():
