@@ -86,7 +86,7 @@ def dashboard():
     
 @app.route('/payloads')
 def index():
-    content = render_template('payloads-view.jinja', payloads=payloads)
+    content = render_template('payloads-view.html', payloads=payloads)
     with open('templates/header.html', 'r') as file:
         header = file.read()
     return render_template_string(header + content)
