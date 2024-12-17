@@ -23,8 +23,8 @@ env = Environment(loader = FileSystemLoader('templates'))
 app = Flask(__name__)
 
 CORS(app, resources={
-    r"/callback": {"origins": "*"},  # Allow all origins for '/public'
-    r"/": {"origins": "*"},  # Allow all origins for '/public'
+    r"/callback": {"origins": "*"},     # Allow all origins for '/callback'
+    r"/": {"origins": "*"},             # Allow all origins for '/'
 })
 
 # Path to the exploit.js file for debugging purposes
