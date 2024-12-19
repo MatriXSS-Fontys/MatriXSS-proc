@@ -1,0 +1,29 @@
+version: '3.8'
+services:
+  flask-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - matrixss_db
+  matrixss_db:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: user
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: matrixss_db
+    ports:
+      - "5432:5432"
+  postgres_admin:
+    image: dpage/pgadmin4
+    container_name: postgres_admin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: postgres
+    ports:
+      - "8888:80"
+    depends_on:
+      - matrixss_db
+

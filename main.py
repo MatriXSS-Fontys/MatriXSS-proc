@@ -10,16 +10,23 @@ from flask import (
     redirect,
     url_for
 )
+from flask_cors import CORS
 import requests
 import logging
 import os
 from bs4 import BeautifulSoup
 from jinja2 import Environment, FileSystemLoader
 from models.vulnerability import Vulnerability
+from database import initialize_db, insert_payload, fetch_payloads, populate_payloads
 from payload import payloads
 
 env = Environment(loader = FileSystemLoader('templates'))
 app = Flask(__name__)
+
+CORS(app, resources={
+    r"/callback": {"origins": "*"},     # Allow all origins for '/callback'
+    r"/": {"origins": "*"},             # Allow all origins for '/'
+})
 
 # Path to the exploit.js file for debugging purposes
 EXPLOIT_FILE_PATH = os.path.abspath("templates/exploit/exploit.js")
@@ -27,6 +34,14 @@ app.config['CURRENT_FILE'] = 'exploit.js'
 
 print(os.path.abspath('static/exploit.js'))
 
+def setup():
+    initialize_db()
+
+@app.route("/")
+def returnExploit():
+    # Log the full path for debugging
+    file_path = os.path.abspath("templates/exploit/exploit.js")
+    print(f"Looking for file at: {file_path}")
 app.secret_key = 'your_secret_key'  # Needed for session handling
 logging.basicConfig(level=logging.INFO)
 
@@ -155,9 +170,25 @@ def handle_callback():
     return jsonify({'status': 'Callback received'}), 200
 
 
+
+def send_request():
+    r = requests.get("https://example.com/")
+    content = r.text
+
+    soup = BeautifulSoup(content, 'html.parser')
+    title = soup.title
+
+    print("page title: " + title.text)
+
 def get_page_content(url):
     r = requests.get(url)
     return r.text
 
 if __name__ == '__main__':
+    initialize_db()  # Ensure the table exists
+    populate_payloads()  # Insert payloads into the database
+    payloads = fetch_payloads()  # Fetch and print all payloads
+    for payload in payloads:
+        print(payload)
     app.run(debug=True)
+
