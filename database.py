@@ -2,17 +2,9 @@ import psycopg2
 
 from payloads import payload_functions
 
-# Database configuration
-DATABASE_CONFIG = {
-    'database': 'matrixssdb',
-    'user': 'matrixss',
-    'password': 'matrixss',
-    'host': 'localhost',
-    'port': 5432
-}
-
 def connect_db():
     """Connect to the PostgreSQL database."""
+    print('Connecting to the PostgreSQL database...')
     conn = psycopg2.connect(database="matrixssdb",
                             user="matrixss",
                             password="matrixss",
@@ -23,7 +15,6 @@ def initialize_db():
     """Create the payloads table if it does not exist."""
     print("test")
     conn = connect_db()
-    print("Connection: " + conn)
 
     with conn.cursor() as cur:
         cur.execute("""
@@ -38,9 +29,8 @@ def initialize_db():
         conn.commit()
     conn.close()
 
-def insert_payload(func_name, title, description, payload):
+def insert_payload(func_name, title, description, payload, conn):
     """Insert a new payload into the database."""
-    conn = connect_db()
     with conn.cursor() as cur:
         cur.execute("""
         INSERT INTO payloads (func_name, title, description, payload)
@@ -52,7 +42,7 @@ def insert_payload(func_name, title, description, payload):
 def populate_payloads():
     """Populate the payloads table with predefined payloads."""
     for func_name, title, description, payload in payload_functions:
-        insert_payload(func_name, title, description, payload)
+        insert_payload(func_name, title, description, payload, connect_db())
 
 def fetch_payloads():
     """Fetch all payloads from the database."""

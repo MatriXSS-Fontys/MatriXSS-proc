@@ -12,7 +12,6 @@ app = Flask(__name__)
 import os
 print(os.path.abspath('static/exploit.js'))
 
-
 def setup():
     initialize_db()
 
@@ -117,8 +116,8 @@ def send_request():
 
     print("page title: " + title.text)
 
-
 if __name__ == '__main__':
+    print("kanker")
     initialize_db()  # Ensure the table exists
     populate_payloads()  # Insert payloads into the database
     payloads = fetch_payloads()  # Fetch and print all payloads
