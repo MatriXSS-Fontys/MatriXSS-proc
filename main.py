@@ -180,17 +180,15 @@ def send_request():
 
     print("page title: " + title.text)
 
+def get_page_content(url):
+    r = requests.get(url)
+    return r.text
+
 if __name__ == '__main__':
-    print("kanker")
     initialize_db()  # Ensure the table exists
     populate_payloads()  # Insert payloads into the database
     payloads = fetch_payloads()  # Fetch and print all payloads
     for payload in payloads:
         print(payload)
     app.run(debug=True)
-def get_page_content(url):
-    r = requests.get(url)
-    return r.text
 
-if __name__ == '__main__':
-    app.run(debug=True)

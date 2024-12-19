@@ -5,10 +5,13 @@ from payloads import payload_functions
 def connect_db():
     """Connect to the PostgreSQL database."""
     print('Connecting to the PostgreSQL database...')
-    conn = psycopg2.connect(database="matrixssdb",
-                            user="matrixss",
-                            password="matrixss",
-                            host="localhost", port="5432")
+    conn = psycopg2.connect(
+        user="user",
+        password="password",
+        host="127.0.0.1",
+        port="5432",
+        database="matrixss_db"
+    )
     return conn
 
 def initialize_db():
