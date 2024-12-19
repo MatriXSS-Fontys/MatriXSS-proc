@@ -1,2 +1,2 @@
 . ./.venv/bin/activate
-python3 ./main.py
+flask --app main.py run --host=0.0.0.0
