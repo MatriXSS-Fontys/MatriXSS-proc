@@ -5,11 +5,17 @@ from flask import Flask, render_template
 from jinja2 import Environment, FileSystemLoader
 from flask import Flask, send_from_directory
 from models.vulnerability import Vulnerability
+from database import initialize_db, insert_payload, fetch_payloads, populate_payloads
 
 env = Environment(loader = FileSystemLoader('templates'))
 app = Flask(__name__)
 import os
 print(os.path.abspath('static/exploit.js'))
+
+
+def setup():
+    initialize_db()
+
 @app.route("/")
 def returnExploit():
     # Log the full path for debugging
@@ -113,4 +119,9 @@ def send_request():
 
 
 if __name__ == '__main__':
+    initialize_db()  # Ensure the table exists
+    populate_payloads()  # Insert payloads into the database
+    payloads = fetch_payloads()  # Fetch and print all payloads
+    for payload in payloads:
+        print(payload)
     app.run(debug=True)
