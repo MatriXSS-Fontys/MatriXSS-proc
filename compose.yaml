@@ -6,16 +6,6 @@ services:
       dockerfile: Dockerfile
     ports:
       - "5000:5000"
-    depends_on:
-      - matrixss_db
-  matrixss_db:
-    image: postgres:latest
-    environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: matrixss_db
-    ports:
-      - "5432:5432"
   nginx:
     image: nginx:latest
     container_name: nginx
@@ -26,7 +16,7 @@ services:
       - "443:443"
       - "80:80"  # Redirect HTTP traffic to HTTPS
     depends_on:
-      - flask_app
+      - matrixss_db
 #  postgres_admin:
 #    image: dpage/pgadmin4
 #    container_name: postgres_admin

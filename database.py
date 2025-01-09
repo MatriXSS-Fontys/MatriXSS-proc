@@ -6,9 +6,9 @@ def connect_db():
     """Connect to the PostgreSQL database."""
     print('Connecting to the PostgreSQL database...')
     conn = psycopg2.connect(
-        user="user",
-        password="password",
-        host="matrixss_db",
+        user="rikdgd",
+        password="isKlein",
+        host="172.17.0.1",
         port="5432",
         database="matrixss_db"
     )
