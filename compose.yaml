@@ -8,6 +8,8 @@ services:
       - "5000:5000"
     depends_on:
       - postgres
+    networks:
+      - app-network
 
   postgres:
     image: postgres
@@ -18,15 +20,23 @@ services:
       POSTGRES_DB: matrixss_db
     ports:
       - "5432:5432"
+    networks:
+      - app-network
+
   nginx:
     image: nginx:latest
     container_name: nginx
     volumes:
-      - /matrixss/nginx.conf  # Use the Nginx config
-      - /etc/ssl/certs  # Mount SSL certs
+      - /matrixss/nginx.conf
+      - /etc/ssl/certs
     ports:
       - "443:443"
-      - "80:80"  # Redirect HTTP traffic to HTTPS
+      - "80:80"
     depends_on:
       - flask-app
+    networks:
+      - app-network
 
+networks:
+  app-network:
+    driver: bridge
