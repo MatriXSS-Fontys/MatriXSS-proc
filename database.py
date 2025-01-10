@@ -8,7 +8,7 @@ def connect_db():
     conn = psycopg2.connect(
         user="user",
         password="password",
-        host="172.17.0.1",
+        host="postgres",
         port="5432",
         database="matrixss_db"
     )

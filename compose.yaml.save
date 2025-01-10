@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  flask-app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+    networks:
+      - app-networ##  postgres:
+##    image: postgres
+##    container_name: postgres
+##    environment:
+##      POSTGRES_USER: user
+##      POSTGRES_PASSWORD: password
+##      POSTGRES_DB: matrixss_db
+##    ports:
+##      - "5432:5432"
+##    networks:
+##      - app-network
+
+networks:
+  app-network:
+    driver: bridge

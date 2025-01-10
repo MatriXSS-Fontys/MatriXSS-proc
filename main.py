@@ -190,5 +190,5 @@ if __name__ == '__main__':
     payloads = fetch_payloads()  # Fetch and print all payloads
     for payload in payloads:
         print(payload)
-    app.run(host="0.0.0.0", port=5000, ssl_context=('server.crt', 'server.key'))
+    app.run(host="0.0.0.0", port=5000)
 
