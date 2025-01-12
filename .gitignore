@@ -34,3 +34,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+
+# Don't allow found exploits to be on git
+static/Triggers/*
