@@ -19,15 +19,11 @@
           <thead>
             <tr>
               <th>URL</th>
-              <th>Element Selector</th>
-              <th>Page Name</th>
             </tr>
           </thead>
           <tbody>
             {% for item in found_vulns %}
             <tr onclick="showImage('{{ item.url }}')">
-              <td>{{ item.url }}</td>
-              <td>{{ item.selector }}</td>
               <td>{{ item.page_name }}</td>
             </tr>
             {% endfor %}
