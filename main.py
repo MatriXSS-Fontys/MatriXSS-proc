@@ -111,7 +111,12 @@ def index():
         header = file.read()
     return render_template_string(header + content)
 
-    
+class Vulnerability:
+    def __init__(self, url, page_name, number):
+        self.url = url
+        self.page_name = page_name
+        self.number = number  # Store the extracted number for sorting
+
 @app.route("/results")
 def found_vulns_page():
     # Directory containing the trigger files
@@ -123,15 +128,28 @@ def found_vulns_page():
     # Process each file in the Triggers folder
     for filename in os.listdir(triggers_folder):
         if filename.endswith(('.png', '.jpg', '.jpeg', '.gif')):  # Check for image files
-            # Remove '_n' suffix from filename if it exists
+            # Find the last underscore in the filename to extract the number
             last_underscore_index = filename.rfind('_')
 
-            # Keep everything before the last underscore
+            if last_underscore_index != -1:
+                # Extract the part after the last underscore and convert it to a number
+                number_str = filename[last_underscore_index + 1:].split('.')[0]
+                try:
+                    number = int(number_str)  # Convert the extracted string to an integer
+                except ValueError:
+                    number = 0  # Default to 0 if no number is found
+            else:
+                number = 0  # Default to 0 if no underscore is found
+
+            # Remove the number part from the filename for the page_name
             processed_name = filename[:last_underscore_index] if last_underscore_index != -1 else filename
 
             # Construct the URL using Flask's url_for
             file_url = url_for('static', filename=f'/Triggers/{filename}')
-            found_vulns.append(Vulnerability(file_url, '#example', processed_name))
+            found_vulns.append(Vulnerability(file_url, processed_name, number))
+
+    # Sort the found vulnerabilities by the extracted number
+    found_vulns.sort(key=lambda x: x.number)
 
     # Render the template with the found_vulns data
     content = render_template('results-view.html', found_vulns=found_vulns)

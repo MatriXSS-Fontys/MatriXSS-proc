@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>MatriXSS - Scan Results</title>
   <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
-  <script src="{{ url_for('static', filename='js/html2canvas') }}"></script>
 </head>
 <body>
   <header>
@@ -22,10 +21,19 @@
             </tr>
           </thead>
           <tbody>
-            {% for item in found_vulns %}
-            <tr onclick="showImage('{{ item.url }}')">
-              <td>{{ item.page_name }}</td>
-            </tr>
+            {% for page_name, group in found_vulns|groupby('page_name') %}
+              <tr class="group-row" onclick="toggleScreenshots('{{ page_name }}')">
+                <td>{{ page_name }}</td>
+              </tr>
+              <tr id="screenshots-{{ page_name }}" class="screenshot-list" style="display: none;">
+                <td colspan="1">
+                  <ul>
+                    {% for item in group %}
+                      <li><a style="color: white" href="#" onclick="showImage('{{ item.url }}')">Screenshot {{ item.number }}</a></li>
+                    {% endfor %}
+                  </ul>
+                </td>
+              </tr>
             {% endfor %}
           </tbody>
         </table>
@@ -39,6 +47,15 @@
     function showImage(imageUrl) {
       const pageView = document.getElementById('page-viewer');
       pageView.src = imageUrl; // Set iframe source to the image URL
+    }
+
+    function toggleScreenshots(pageName) {
+      const screenshotsRow = document.getElementById('screenshots-' + pageName);
+      if (screenshotsRow.style.display === "none") {
+        screenshotsRow.style.display = "table-row"; // Show screenshots
+      } else {
+        screenshotsRow.style.display = "none"; // Hide screenshots
+      }
     }
   </script>
 </body>
