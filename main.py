@@ -30,6 +30,7 @@ CORS(app, resources={
 
 # Path to the exploit.js file for debugging purposes
 EXPLOIT_FILE_PATH = os.path.abspath("../templates/exploit/test-exploit.js")
+TRIGGERS_DIR_PATH = os.path.abspath("./uploads/Triggers/")
 app.config['CURRENT_FILE'] = 'test-exploit.js'
 
 print(os.path.abspath('static/exploit.js'))
@@ -119,14 +120,11 @@ class Vulnerability:
 
 @app.route("/results")
 def found_vulns_page():
-    # Directory containing the trigger files
-    triggers_folder = "static/Triggers"
-
     # List to hold Vulnerability objects
     found_vulns = []
 
     # Process each file in the Triggers folder
-    for filename in os.listdir(triggers_folder):
+    for filename in os.listdir(TRIGGERS_DIR_PATH):
         if filename.endswith(('.png', '.jpg', '.jpeg', '.gif')):  # Check for image files
             # Find the last underscore in the filename to extract the number
             last_underscore_index = filename.rfind('_')
@@ -144,8 +142,8 @@ def found_vulns_page():
             # Remove the number part from the filename for the page_name
             processed_name = filename[:last_underscore_index] if last_underscore_index != -1 else filename
 
-            # Construct the URL using Flask's url_for
-            file_url = url_for('static', filename=f'/Triggers/{filename}')
+            # Construct the URL using Flask's send_from_directory
+            file_url = url_for('uploaded_file', filename=f'Triggers/{filename}')
             found_vulns.append(Vulnerability(file_url, processed_name, number))
 
     # Sort the found vulnerabilities by the extracted number
@@ -159,6 +157,13 @@ def found_vulns_page():
         header = file.read()
 
     return render_template_string(header + content)
+
+
+# Helper route to serve files from the uploads folder
+@app.route('/uploads/<path:filename>')
+def uploaded_file(filename):
+    return send_from_directory('uploads', filename)
+
 
 @app.route("/handle-vuln-data", methods=['POST'])
 def handle_vuln_data():
@@ -200,11 +205,11 @@ def handle_callback():
     url = extract_hostname(url)
     print(url)
     # Generate the next incremented filename
-    existing_files = os.listdir('./static/Triggers')
+    existing_files = os.listdir(TRIGGERS_DIR_PATH)
     png_files = [f for f in existing_files if f.endswith('.png')]
     next_index = len(png_files) + 1
     new_filename = f"{url}_{next_index}.png"
-    save_path = os.path.join('./static/Triggers', new_filename)
+    save_path = os.path.join(TRIGGERS_DIR_PATH, new_filename)
     
     # Save the file as a .png
     file.save(save_path)

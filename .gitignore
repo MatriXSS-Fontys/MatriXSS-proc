@@ -37,3 +37,4 @@ MANIFEST
 
 # Don't allow found exploits to be on git
 static/Triggers/*
+uploads/
