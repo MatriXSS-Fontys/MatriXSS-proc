@@ -29,9 +29,9 @@ CORS(app, resources={
 })
 
 # Path to the exploit.js file for debugging purposes
-EXPLOIT_FILE_PATH = os.path.abspath("../templates/exploit/test-exploit.js")
+EXPLOIT_FILE_PATH = os.path.abspath("../templates/exploit/MATRIXSS.js")
 TRIGGERS_DIR_PATH = os.path.abspath("./uploads/Triggers/")
-app.config['CURRENT_FILE'] = 'test-exploit.js'
+app.config['CURRENT_FILE'] = 'MATRIXSS.js'
 
 print(os.path.abspath('static/exploit.js'))
 
