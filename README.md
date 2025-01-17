@@ -45,20 +45,38 @@ Blind XSS attacks occur when the payload is triggered in a context inaccessible 
    git clone https://github.com/your-username/MatriXSS.git
    cd MatriXSS
    ```
-2. Install dependencies:
+2. Create a virtual environment:
    ```bash
-   pip install -r requirements.txt
+   # Windows:
+   python -m venv venv
+
+   # Linux / MacOS:
+   python3 -m venv venv
    ```
-3. Start virtual enviroment
+3. Activate the virtual enviroment
     ```bash
-    #Windows
-   venv\Scripts\activate
-    #linux
-   . ./.venv/bin/activate
+    # Windows
+    venv\Scripts\activate
+    
+    # Linux / MacOS
+    . ./.venv/bin/activate
    ``` 
-4. Start the application
+4. Install dependencies to the virtual environment:
    ```bash
-  python3 ./main.py
+   # Windows:
+   pip install -r requirements.txt
+
+   # Linux / MacOS:
+   venv/bin/pip install -r requirements.txt
+   ```
+
+5. Start the application
+   ```bash
+   # Windows:
+   python .\main.py
+   
+   # Linux / MacOS
+   python3 ./main.py
    ``` 
   On windows:
   
