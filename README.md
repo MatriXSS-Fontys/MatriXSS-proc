@@ -180,5 +180,3 @@ Planned improvements include:
 MatriXSS is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 ---
-
-Let me know if you'd like to refine any sections or add specific technical details!
