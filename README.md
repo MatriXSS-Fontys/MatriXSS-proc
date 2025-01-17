@@ -86,11 +86,7 @@ Blind XSS attacks occur when the payload is triggered in a context inaccessible 
    git clone https://github.com/your-username/MatriXSS.git
    cd MatriXSS
    ```
-2. Install dependencies:
-   ```bash
-   pip install -r requirements.txt
-   ```
-3. Docker compose
+2. Docker compose
    ```bash
    docker compose up
    ```
