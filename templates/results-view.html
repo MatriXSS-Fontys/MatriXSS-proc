@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MatriXSS - Scan Results</title>
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/main.css') }}">
+</head>
+<body>
+  <header>
+    <h1>MatriXSS Scan Results</h1>
+  </header>
+  <main>
+    <div class="container">
+      <div id="results-container">
+        <p class="info-text">Click on any row to display its page or image.</p>
+        <table id="results-table">
+          <thead>
+            <tr>
+              <th>URL</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for page_name, group in found_vulns|groupby('page_name') %}
+              <tr class="group-row" onclick="toggleScreenshots('{{ page_name }}')">
+                <td>{{ page_name }}</td>
+              </tr>
+              <tr id="screenshots-{{ page_name }}" class="screenshot-list" style="display: none;">
+                <td colspan="1">
+                  <ul>
+                    {% for item in group %}
+                      <li><a style="color: white" href="#" onclick="showImage('{{ item.url }}')">Screenshot {{ item.number }}</a></li>
+                    {% endfor %}
+                  </ul>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <iframe id="page-viewer" style="width: 100%; height: 500px; border: 1px solid #ccc;"></iframe>
+    </div>
+  </main>
+
+  <script>
+    function showImage(imageUrl) {
+      const pageView = document.getElementById('page-viewer');
+      pageView.src = imageUrl; // Set iframe source to the image URL
+    }
+
+    function toggleScreenshots(pageName) {
+      const screenshotsRow = document.getElementById('screenshots-' + pageName);
+      if (screenshotsRow.style.display === "none") {
+        screenshotsRow.style.display = "table-row"; // Show screenshots
+      } else {
+        screenshotsRow.style.display = "none"; // Hide screenshots
+      }
+    }
+  </script>
+</body>
+</html>
